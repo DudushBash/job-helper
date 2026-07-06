@@ -1,61 +1,66 @@
-import './App.css'
-import Header from './components/Header';
 import { useState } from "react";
 
+import Sidebar from "./components/Sidebar";
+import Header from "./components/Header";
+import ChatWindow from "./components/ChatWindow";
+import PromptInput from "./components/PromptInput";
 
-function App() {
-  const [count, setCount] = useState(0);
-  const [query, setQuery] = useState("");
-  const [jobs, setJobs] = useState([]);
+import { searchJobs } from "./services/api";
 
-  async function handleSearch() {
-    console.log("Searching:", query);
+import "./styles/globals.css";
+import "./styles/app.css";
+
+export default function App() {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  async function handleSearch(prompt) {
+    if (!prompt.trim()) return;
+
+    const userMessage = {
+      role: "user",
+      content: prompt,
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+
+    setLoading(true);
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/search?query=${encodeURIComponent(query)}`
-      );
+      const jobs = await searchJobs(prompt);
 
-      console.log("Status:", response.status);
+      const botMessage = {
+        role: "assistant",
+        jobs,
+      };
 
-      const data = await response.json();
-
-      console.log("Data:", data);
-
-      setJobs(data);
-    } catch (error) {
-      console.error("Fetch error:", error);
+      setMessages((prev) => [...prev, botMessage]);
+    } finally {
+      setLoading(false);
+    }
   }
-}
 
-  return(
-    <div>
-      <input
-        type="text"
-        value={query}
-        onChange={(event) => setQuery(event.target.value)}
-      />
-      <button onClick={handleSearch}>
-        Search
-      </button>
+  return (
+    <div className="app">
 
-      <pre>
-        {JSON.stringify(jobs, null, 2)}
-      </pre>
+        <Sidebar /> 
 
-      <h1>{count}</h1>
-      <button onClick={() => setCount(count + 1)}>
-        +
-      </button> 
-      <button onClick={() => setCount(count - 1)}>
-        -
-      </button>
+      <div className="main">
 
-      <Header title = 'JOOOOPAAAAA' subtitle="Search jobs powered by AI"/>
-      <p>Find Your Dream Job.</p>
+        <Header />  
+
+        <ChatWindow
+          messages={messages}
+          loading={loading}
+        />
+
+        <PromptInput
+          onSend={handleSearch}
+          disabled={loading}
+        />
+
+      </div>
+
     </div>
   );
 }
-
-
-export default App;

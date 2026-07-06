@@ -1,11 +1,21 @@
-function Header(props) {
-    return (
-            <header>
-                <h1>{props.title}</h1>
-                <p>{props.subtitle}</p>
-            </header>
-        )
+import "./../styles/header.css";
+
+export default function Header() {
+
+return(
+
+<header className="header">
+
+<div>
+
+<h2>Job AI Assistant</h2>
+
+<p>Find your next job with AI</p>
+
+</div>
+
+</header>
+
+);
+
 }
-
-
-export default Header   
